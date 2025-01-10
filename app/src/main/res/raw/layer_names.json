@@ -1,0 +1,16 @@
+{
+  "bdod":  "Bulk density",
+  "cec": "Cation exchange capacity at ph 7",
+  "cfvo": "Coarse fragments volumetric",
+  "clay": "Clay content",
+  "nitrogen": "Nitrogen",
+  "ocd": "Organic carbon densities",
+  "ocs": "Soil organic carbon stock",
+  "phh2o": "Soil pH in H2O",
+  "sand": "Sand content",
+  "silt": "Silt content",
+  "soc":  "Soil organic carbon content",
+  "wv0010":  "Water Layer wv1500",
+  "wv0033": "Water Layer wv0033",
+  "wv1500": "Water Layer wv0010"
+}
