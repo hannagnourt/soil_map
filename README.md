@@ -1,9 +1,9 @@
 # soil_map
 
 ## Giới thiệu
-Ứng dụng này là một công cụ hỗ trợ người dùng truy cập thông tin đất đai một cách chi tiết và trực quan. Ứng dụng cho phép:
-- Hiển thị các lớp thông tin đất  tùy chọn trên bản đồ Google Maps.
-- Cung cấp thông tin về chỉ số đất ở một điểm cụ thể.
+Ứng dụng này là một công cụ hỗ trợ người dùng truy cập thông tin dinh dưỡng đất một cách chi tiết và trực quan. Ứng dụng cho phép:
+- Hiển thị các lớp thông tin về tính chất lý, hóa của đất trên bản đồ Google Maps.
+- Cung cấp thông tin tính chất lý, hóa của đất tại một vị trí cụ thể.
 - Tích hợp chức năng tìm kiếm tự động, cho phép người dùng nhanh chóng tìm kiếm vị trí bằng cách nhập từ khóa.
 
 ## Thư viện hỗ trợ
