@@ -1,0 +1,34 @@
+{
+  "layers": [
+    {
+      "property": "OC",
+      "layer_structure": [
+        {
+          "range": "OC",
+          "values": [
+            "Q0.05",
+            "Q0.5",
+            "Q0.95",
+            "mean",
+            "uncertainty"
+          ]
+        }     
+      ]
+    },
+    {
+      "property": "COC",
+      "layer_structure": [
+        {
+          "range": "COC",
+          "values": [
+            "Q0.05",
+            "Q0.5",
+            "Q0.95",
+            "mean",
+            "uncertainty"
+          ]
+        }   
+      ]
+    }      
+  ]
+}

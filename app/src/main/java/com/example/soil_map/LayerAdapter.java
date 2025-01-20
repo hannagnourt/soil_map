@@ -23,9 +23,6 @@ public class LayerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     private OnLayerClickListener listener;
     private LayerNameMapper layerNameMapper = new LayerNameMapper();
 
-    private static final int PARENT_VIEW_TYPE = 0;
-    private static final int CHILD_VIEW_TYPE = 1;
-
     public interface OnLayerClickListener {
         void onLayerClick(LayerStructure LayerStructure);
     }
@@ -36,27 +33,27 @@ public class LayerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         this.layerNameMapper = layerNameMapper;
     }
 
-    public int getItemViewType(int position) {
-        int cnt = 0;
-
-        for (LayerStructure layer : layers) {
-            if (position == cnt)
-                return PARENT_VIEW_TYPE;
-
-            cnt++;
-
-            if (layer.getExpanded()) {
-                int childCnt = layer.getLayerStructure().size();
-
-                if (position < cnt + childCnt)
-                    return CHILD_VIEW_TYPE;
-
-                cnt += childCnt;
-            }
-        }
-
-        return PARENT_VIEW_TYPE;
-    }
+//    public int getItemViewType(int position) {
+//        int cnt = 0;
+//
+//        for (LayerStructure layer : layers) {
+//            if (position == cnt)
+//                return PARENT_VIEW_TYPE;
+//
+//            cnt++;
+//
+//            if (layer.getExpanded()) {
+//                int childCnt = layer.getLayerStructure().size();
+//
+//                if (position < cnt + childCnt)
+//                    return CHILD_VIEW_TYPE;
+//
+//                cnt += childCnt;
+//            }
+//        }
+//
+//        return PARENT_VIEW_TYPE;
+//    }
 
     public void setLayers(List<LayerStructure> newLayers) {
         layers.clear();
@@ -69,115 +66,69 @@ public class LayerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     // Create a new ViewHolder for each item in the RecyclerView
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         // Inflate the layout for each item in the RecyclerView
-        if (viewType == PARENT_VIEW_TYPE) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_layer, parent, false);
-            return new ParentViewHolder(view);
-        } else {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_layer, parent, false);
-            return new ChildViewHolder(view);
-        }
+//        if (viewType == PARENT_VIEW_TYPE) {
+//            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_layer, parent, false);
+//            return new ParentViewHolder(view);
+//        } else {
+//            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_layer, parent, false);
+//            return new ChildViewHolder(view);
+//        }
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_layer, parent, false);
+        return new LayerAdapterViewHolder(view);
     }
 
     @Override
     // Bind the data for each item in the RecyclerView
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        int count = 0;
-        for (LayerStructure layer : layers) {
-            if (position == count) {
-                // Bind parent view
-                ((ParentViewHolder) holder).bind(layer);
-                return;
+        LayerStructure layerStructure = layers.get(position);
+        ((LayerAdapterViewHolder) holder).bind(layerStructure);
+        ((LayerAdapterViewHolder) holder).layerVisibilitySwitch.setOnCheckedChangeListener(null);
+        ((LayerAdapterViewHolder) holder).layerVisibilitySwitch.setChecked(layerStructure.getVisibility());
+        ((LayerAdapterViewHolder) holder).layerVisibilitySwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                for (LayerStructure l : layers)
+                    if (l.getVisibility()) {
+                        l.setVisibility(false);
+                        (new Handler(Looper.getMainLooper())).post(() -> notifyItemChanged(layers.indexOf(l)));
+                        break;
+                    }
+
+                layerStructure.setVisibility(true);
+                listener.onLayerClick(layerStructure);
             }
-
-            count++;
-
-            if (layer.getExpanded()) {
-                List<Value> childItems = layer.getLayerStructure();
-                int childCount = childItems.size();
-                if (position < count + childCount) {
-                    // Bind child view
-                    Value value = childItems.get(position - count);
-                    ((ChildViewHolder) holder).bind(value);
-                    ((ChildViewHolder) holder).layerVisibilitySwitch.setOnCheckedChangeListener(null);
-                    ((ChildViewHolder) holder).layerVisibilitySwitch.setChecked(value.getVisibility());
-                    int finalCount = count;
-                    ((ChildViewHolder) holder).layerVisibilitySwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                        // Handle LayerStructure visibility switch change event
-                        buttonView.setEnabled(false);
-                        Handler handler = new Handler(Looper.getMainLooper());
-                        if (isChecked) {
-                            int index = -1;
-                            boolean found = false;
-                            for (LayerStructure l: layers){
-                                index++;
-
-                                if (l.getExpanded())
-                                    for (Value v: l.getLayerStructure())
-                                    {
-                                        index++;
-
-                                        if (v.getVisibility())
-                                        {
-                                            v.setVisibility(false);
-                                            int finalIndex = index;
-                                            handler.post(() -> notifyItemChanged(finalIndex));
-                                            found = true;
-                                            break;
-                                        }
-                                    }
-
-                                if (found)
-                                    break;
-                            }
-
-                            value.setVisibility(true);
-                        } else {
-                            value.setVisibility(false);
-                        }
-
-                        handler.postDelayed(() -> buttonView.setEnabled(true), 100);
-                    });
-
-                    return;
-                }
-
-                count += childCount;
+            else {
+                layerStructure.setVisibility(false);
+                listener.onLayerClick(null);
             }
-        }
+        });
     }
 
     @Override
     public int getItemCount() {
-        int cnt = 0;
-        for (LayerStructure layer : layers) {
-            cnt++;
-
-            if (layer.getExpanded())
-                cnt += layer.getLayerStructure().size();
-        }
-
-        return cnt;
+        return layers.size();
     }
 
-    class ParentViewHolder extends RecyclerView.ViewHolder {
+    class LayerAdapterViewHolder extends RecyclerView.ViewHolder {
         TextView textViewLayerName;
-        ImageView imageViewExpand;
+//        ImageView imageViewExpand;
         ImageButton layerCustomizeButton;
         Switch layerVisibilitySwitch;
 
-        ParentViewHolder(View itemView) {
+        LayerAdapterViewHolder(View itemView) {
             super(itemView);
             textViewLayerName = itemView.findViewById(R.id.textView_layer_name);
-            imageViewExpand = itemView.findViewById(R.id.imageView_expand);
+//            imageViewExpand = itemView.findViewById(R.id.imageView_expand);
             layerCustomizeButton = itemView.findViewById(R.id.layerCustomizeButton);
             layerVisibilitySwitch = itemView.findViewById(R.id.layerVisibilitySwitch);
+
         }
 
         void bind(LayerStructure layerStructure) {
-            String text = getFullName(layerStructure.getProperty());
-            textViewLayerName.setText(text);
+            String text = layerStructure.getName();
+            if (text != null && !text.isEmpty())
+                textViewLayerName.setText(text);
 
-            imageViewExpand.setImageResource(
+            /*imageViewExpand.setImageResource(
                     layerStructure.getExpanded() ? R.drawable.down_arrow : R.drawable.right_arrow
             );
 
@@ -202,27 +153,9 @@ public class LayerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                             notifyItemRangeRemoved(getAdapterPosition() + 1, childCount));
 
                 new Handler(Looper.getMainLooper()).postDelayed(() -> imageViewExpand.setEnabled(true), 100);
-            });
-
-            layerVisibilitySwitch.setVisibility(View.GONE);
-        }
-    }
-
-    class ChildViewHolder extends RecyclerView.ViewHolder {
-        TextView textViewLayerName;
-        Switch layerVisibilitySwitch;
-        ImageButton layerCustomizeButton;
-
-        ChildViewHolder(View itemView) {
-            super(itemView);
-            textViewLayerName = itemView.findViewById(R.id.textView_layer_name);
-            layerVisibilitySwitch = itemView.findViewById(R.id.layerVisibilitySwitch);
-            layerCustomizeButton = itemView.findViewById(R.id.layerCustomizeButton);
-        }
-
-        void bind(Value value) {
-            String text = value.getRange();
-            textViewLayerName.setText(text);
+            });*/
+            layerCustomizeButton.setVisibility(View.VISIBLE);
+            layerVisibilitySwitch.setVisibility(View.VISIBLE);
         }
     }
 }

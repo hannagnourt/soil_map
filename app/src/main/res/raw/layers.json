@@ -1,0 +1,14 @@
+{
+  "layers": [
+    {
+      "property": "COC",
+      "display_name": "COC",
+      "unit": "kg/cm"
+    },
+    {
+      "property": "OC",
+      "display_name": "OC",
+      "unit": "kg/cm"
+    }
+  ]
+}

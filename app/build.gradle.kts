@@ -54,6 +54,7 @@ dependencies {
     annotationProcessor ("com.github.bumptech.glide:compiler:4.15.1")
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.8.0"))
     implementation("com.google.android.libraries.places:places:3.5.0")
+    implementation ("com.google.code.gson:gson:2.10")
 }
 
 secrets {

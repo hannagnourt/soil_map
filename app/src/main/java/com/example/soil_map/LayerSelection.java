@@ -71,7 +71,7 @@ public class LayerSelection extends AppCompatActivity {
         btnAddLayer.setOnClickListener(v -> {
             // Handle add layer button click event
             layers.add(new LayerStructure());
-            layerAdapter.notifyDataSetChanged();
+            layerAdapter.notifyItemInserted(layers.size()-1);
         });
 
         layersButton = findViewById(R.id.layersButton);
@@ -110,19 +110,19 @@ public class LayerSelection extends AppCompatActivity {
         String currentLayer = "";
         boolean found = false;
 
-        for (LayerStructure layer : layers)
-        {
-            for (Value value : layer.getLayerStructure()) {
-                if (value.getVisibility()) {
-                    currentLayer = layer.getProperty() + "_" + value.getRange() + "_mean";
-                    found = true;
-                    break;
-                }
-            }
-
-            if (found)
-                break;
-        }
+//        for (LayerStructure layer : layers)
+//        {
+//            for (Value value : layer.getLayerStructure()) {
+//                if (value.getVisibility()) {
+//                    currentLayer = layer.getProperty() + "_" + value.getRange() + "_mean";
+//                    found = true;
+//                    break;
+//                }
+//            }
+//
+//            if (found)
+//                break;
+//        }
 
         return currentLayer;
     }

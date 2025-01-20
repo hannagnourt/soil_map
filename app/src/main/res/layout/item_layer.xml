@@ -2,9 +2,9 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="48dp"
     android:orientation="horizontal"
-    android:padding="8dp">
+    android:padding="0dp">
 
     <!-- Expand/collapse icon -->
     <ImageView
@@ -14,25 +14,30 @@
         android:contentDescription="Expand/Collapse" />
 
     <!-- Layer name -->
-    <TextView
-        android:id="@+id/textView_layer_name"
-        android:layout_width="300dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:text="Layer Name"
-        android:textSize="16sp" />
 
     <!-- Layer visibility button -->
+
+    <TextView
+        android:id="@+id/textView_layer_name"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_marginStart="5dp"
+        android:text="Layer Name"
+        android:textAlignment="center"
+        android:textSize="16sp" />
+
     <Switch
         android:id="@+id/layerVisibilitySwitch"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent" />
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="5dp"/>
 
     <!-- Layer customize button -->
     <ImageButton
         android:id="@+id/layerCustomizeButton"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:backgroundTint="#00FFFFFF"
+        android:layout_marginStart="5dp"
         android:src="@drawable/more" />
 </LinearLayout>

@@ -22,7 +22,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -163,11 +165,26 @@ public class MainActivity extends AppCompatActivity implements GoogleMap.OnMapCl
     }
 
     public void openLayerSelection(View view) {
-        Intent intent = new Intent(getApplicationContext(), LayerSelection.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-        startActivity(intent);
-        
-    }
+//        Intent intent = new Intent(getApplicationContext(), LayerSelection.class);
+//        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+//        startActivity(intent);
+        LayerSelectionFragment layerSelectionFragment = LayerSelectionFragment.newInstance();
+        layerSelectionFragment.show(getSupportFragmentManager(), "layerSelectionFragment");
+
+        LayerViewModel layerViewModel = new ViewModelProvider(this).get(LayerViewModel.class);
+        layerViewModel.getSelectedLayer().observe(mapFragment.getViewLifecycleOwner(), layerStructure -> {
+            if (layerStructure != null)
+            {
+                currentLayer = layerStructure.getProperty();
+
+            }
+            else
+                currentLayer = "";
+            Log.d("current layer:", currentLayer);
+            mMap.clear();
+            addWmsLayer(currentLayer);
+        });
+        }
 
     public void openBasemapSelection(View view) {
         Intent intent = new Intent(getApplicationContext(), BasemapSelection.class);
@@ -187,8 +204,9 @@ public class MainActivity extends AppCompatActivity implements GoogleMap.OnMapCl
         // Move the camera to a default location
         // Add a marker and move the camera
         LatLng hanoi = new LatLng(21.033333, 105.849998);
+        LatLng thaibinh = new LatLng(20.45, 106.34002);
         mMap.addMarker(new MarkerOptions().position(hanoi).title("Marker in Hanoi"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(hanoi, 10));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(thaibinh, 10));
 
         mMap.setOnMapClickListener(point -> {
             tapPoint = point;
@@ -215,10 +233,13 @@ public class MainActivity extends AppCompatActivity implements GoogleMap.OnMapCl
             if (currentLayer != null && !currentLayer.isEmpty())
             {
                 String[] temp = currentLayer.split("_");
-                layerRepository.fetchInfo(point.longitude, point.latitude, temp[0], temp[1]).observe(this, s -> {
-                    tapTextView.setText(text + "\n" + getFullName(temp[0]) + ": " + s);
-                    updateTapTextPosition(point);
-                });
+                if (temp.length > 0)
+                {
+                    layerRepository.fetchInfo(point.longitude, point.latitude, temp[0], temp[1]).observe(this, s -> {
+                        tapTextView.setText(text + "\n" + getFullName(temp[0]) + ": " + s);
+                        updateTapTextPosition(point);
+                    });
+                }
             }
 
             tapTextView.setVisibility(View.VISIBLE);
@@ -270,33 +291,46 @@ public class MainActivity extends AppCompatActivity implements GoogleMap.OnMapCl
 
             @Override
             public URL getTileUrl(int x, int y, int zoom) {
-//                Future<URL> futureUrl = executor.submit(() -> {
-                    LatLngBounds bounds = getTileBounds(x, y, zoom);
+                LatLngBounds bounds = getTileBounds(x, y, zoom);
+/*                    String tileUrl = "https://data.opendevelopmentmekong.net/geoserver/ODMekong/khu_bao_ton/wms?service=WMS&request=GetMap" +
+                            "&layers=ODMekong:khu_bao_ton" +
+                            "&bbox=" + bounds.southwest.longitude + "," + bounds.southwest.latitude + "," +
+                            bounds.northeast.longitude + "," + bounds.northeast.latitude +
+                            "&width=256&height=256" +
+                            "&srs=EPSG:4326&styles=&format=image/png";*/
 
-                    String map = layer.split("_")[0];
-
-                    String tileUrl = "https://maps.isric.org/mapserv?map=/map/" + map +
-                            ".map&SERVICE=WCS&VERSION=2.0.1&REQUEST=GetCoverage&" +
-                            "COVERAGEID=" + layer + "&" +
-                            "FORMAT=image/png&" +
-                            "SUBSET=X(" + bounds.southwest.longitude + "," + bounds.northeast.longitude + ")&" +
-                            "SUBSET=Y(" + bounds.southwest.latitude + "," + bounds.northeast.latitude + ")&" +
-                            "SUBSETTINGCRS=http://www.opengis.net/def/crs/EPSG/0/4326&" +
-                            "OUTPUTCRS=http://www.opengis.net/def/crs/EPSG/0/4326";
+/*                double[][] bounds = tileBounds(x, y, zoom);
+                String tileUrl = "http://27.71.27.228:8080/geoserver/soil/wms?service=WMS&version=1.1.0&request=GetMap" +
+                        "&layers=soil:" + layer +
+                        "&bbox=" + bounds[0][1] + "," + bounds[0][0] + "," +
+                        bounds[1][1] + "," + bounds[1][0] +
+                        "&width=256&height=256" +
+                        "&srs=EPSG:4326&styles=&format=image/png";*/
+                String tileUrl = "https://geoserver.geoscience.vn:8443/geoserver/soil/wms?service=WMS&version=1.1.0&request=GetMap" +
+                        "&layers=soil:" + layer +
+                        "&bbox=" + bounds.southwest.longitude + "," + bounds.southwest.latitude + "," +
+                        bounds.northeast.longitude + "," + bounds.northeast.latitude +
+                        "&width=256&height=256" +
+                        "&srs=EPSG:4326&styles=&format=image/png";
 
                     Log.d("tileURL", tileUrl);
+                    Log.d("tile", x + ", " + y + ", " + zoom);
 
                     try {
                         return new URL(tileUrl);
                     } catch (MalformedURLException e) {
                         e.printStackTrace();
+                        Log.e("TileURL", "Malformed URL: " + tileUrl, e);
                         return null;
                     }
                 };
         };
 
         if (tileOverlay != null)
+        {
             tileOverlay.remove();
+            tileOverlay.clearTileCache();
+        }
 
         // Add the tile overlay to the map
         TileOverlayOptions tileOverlayOptions = new TileOverlayOptions().tileProvider(tileProvider);
@@ -328,6 +362,26 @@ public class MainActivity extends AppCompatActivity implements GoogleMap.OnMapCl
 
     private double mercatorToLatitude(double mercatorY) {
         return Math.toDegrees(Math.atan(Math.sinh(mercatorY)));
+    }
+
+    public static double[] tileToLonLat(int x, int y, int zoom) {
+        // Convert tile x to longitude
+        double lon = x / Math.pow(2.0, zoom) * 360.0 - 180.0;
+
+        // Convert tile y to latitude
+        double n = Math.PI - 2.0 * Math.PI * y / Math.pow(2.0, zoom);
+        double lat = Math.toDegrees(Math.atan(Math.sinh(n)));
+
+        return new double[]{lat, lon};
+    }
+
+    public static double[][] tileBounds(int x, int y, int zoom) {
+        // Top-left corner
+        double[] topLeft = tileToLonLat(x, y, zoom);
+        // Bottom-right corner
+        double[] bottomRight = tileToLonLat(x + 1, y + 1, zoom);
+
+        return new double[][]{topLeft, bottomRight};
     }
 
     @Override
