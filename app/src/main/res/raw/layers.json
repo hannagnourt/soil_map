@@ -3,12 +3,14 @@
     {
       "property": "COC",
       "display_name": "COC",
-      "unit": "kg/cm"
+      "unit": "kg/cm",
+      "index": "Hàm lượng COC"
     },
     {
       "property": "OC",
       "display_name": "OC",
-      "unit": "kg/cm"
+      "unit": "kg/cm",
+      "index": "Hàm lượng OC"
     }
   ]
 }

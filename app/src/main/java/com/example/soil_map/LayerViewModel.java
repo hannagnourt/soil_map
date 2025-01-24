@@ -14,6 +14,7 @@ public class LayerViewModel extends ViewModel {
     private LiveData<List<LayerStructure>> layersLiveData = new MutableLiveData<>();
     private MutableLiveData<LayerStructure> selectedLayer = new MutableLiveData<>();
     private List layers = new ArrayList();
+    private MutableLiveData<Integer> basemap = new MutableLiveData<>();
 
     public LayerViewModel() {
         layerRepository = new LayerRepository();
@@ -38,5 +39,13 @@ public class LayerViewModel extends ViewModel {
 
     public List<LayerStructure> getLayers() {
         return layers;
+    }
+
+    public void setBasemap(int basemap) {
+        this.basemap.setValue(basemap);
+    }
+
+    public MutableLiveData<Integer> getBasemap() {
+        return basemap;
     }
 }

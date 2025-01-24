@@ -47,6 +47,8 @@ class LayerStructure {
     private String name;
     @SerializedName("unit")
     private String unit;
+    @SerializedName("index")
+    private String index;
     private boolean isExpanded = false;
     private boolean visibility = false;
 
@@ -70,6 +72,10 @@ class LayerStructure {
 
     public String getUnit() {
         return unit;
+    }
+
+    public String getIndex() {
+        return index;
     }
 
     public boolean getExpanded() {

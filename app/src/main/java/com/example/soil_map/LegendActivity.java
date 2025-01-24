@@ -81,9 +81,9 @@ public class LegendActivity extends AppCompatActivity {
                 if (unit.isEmpty())
                 {
                     String[] t = currentLayer.split("_");
-                    layerRepository.fetchUnit(t[0], t[1]).observe(this, s -> {
-                        legendUnit.setText(getFullName(t[0]) + " - Depth: " + t[1] + "\n" + "Unit: " + s);
-                    });
+//                    layerRepository.fetchUnit(t[0], t[1]).observe(this, s -> {
+//                        legendUnit.setText(getFullName(t[0]) + " - Depth: " + t[1] + "\n" + "Unit: " + s);
+//                    });
                 }
             }
             else
@@ -173,9 +173,9 @@ public class LegendActivity extends AppCompatActivity {
                 if (unit.isEmpty())
                 {
                     String[] t = currentLayer.split("_");
-                    layerRepository.fetchUnit(t[0], t[1]).observe(this, s -> {
-                        legendUnit.setText(getFullName(t[0]) + " - Depth: " + t[1] + "\n" + "Unit " + s);
-                    });
+//                    layerRepository.fetchUnit(t[0], t[1]).observe(this, s -> {
+//                        legendUnit.setText(getFullName(t[0]) + " - Depth: " + t[1] + "\n" + "Unit " + s);
+//                    });
                     legendUnit.setVisibility(View.VISIBLE);
                 }
             }

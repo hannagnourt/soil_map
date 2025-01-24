@@ -151,9 +151,9 @@ public class LayerSelection extends AppCompatActivity {
         String[] temp = currentLayer.split("_");
         LayerRepository layerRepository = new LayerRepository();
         AtomicReference<String> unit = new AtomicReference<>("");
-        layerRepository.fetchUnit(temp[0], temp[1]).observe(this, s -> {
-            unit.set(s);
-        });
+//        layerRepository.fetchUnit(temp[0], temp[1]).observe(this, s -> {
+//            unit.set(s);
+//        });
 
         return unit.get();
     }

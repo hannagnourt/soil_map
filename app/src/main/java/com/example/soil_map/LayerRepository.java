@@ -28,7 +28,7 @@ public class LayerRepository {
     public LayerRepository() {
         // Initialize Retrofit or your preferred networking library
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://rest.isric.org/soilgrids/v2.0/properties/")
+                .baseUrl("https://geoserver.geoscience.vn:8443/geoserver/soil/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         isricApi = retrofit.create(LayerAPI.class);
@@ -57,21 +57,23 @@ public class LayerRepository {
         return liveData;
     }
 
-    public LiveData<String> fetchInfo(double longtitude, double latitude, String property, String depth) {
+    public LiveData<String> fetchInfo(String layer, String bbox) {
         MutableLiveData<String> info = new MutableLiveData<>();
-        isricApi.getInfo(longtitude, latitude, property, depth, "mean").enqueue(new Callback<InfoResponse>() {
+        isricApi.getInfo(layer, layer, bbox).enqueue(new Callback<InfoResponse>() {
             @Override
             public void onResponse(Call<InfoResponse> call, Response<InfoResponse> response) {
+                Log.d("response", response.toString());
                 if (response.isSuccessful() && response.body() != null) {
                     InfoResponse body = response.body();
+                    Log.d("response", body.toString());
 
-                    String unit = body.getProperties().getLayers().get(0).getUnitMeasure().getUnit();
-                    String v = body.getProperties().getLayers().get(0).getDepths().get(0).getValues().getMean();
+                    String v = body.getFeatures().get(0).getProperties().getValue();
                     if (v != null)
-                        info.setValue(v + " " + unit);
+                        info.setValue(v);
                     else
                         info.setValue("no info");
                 } else {
+                    Log.d("response", "error");
                     info.setValue("no info");
                 }
             }
@@ -85,28 +87,28 @@ public class LayerRepository {
         return info;
     }
 
-    public LiveData<String> fetchUnit(String property, String depth){
-        MutableLiveData<String> unit = new MutableLiveData<>();
-        isricApi.getInfo(0, 0, property, depth, "mean").enqueue(new Callback<InfoResponse>() {
-            @Override
-            public void onResponse(Call<InfoResponse> call, Response<InfoResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    InfoResponse body = response.body();
-
-                    unit.setValue(body.getProperties().getLayers().get(0).getUnitMeasure().getUnit());
-                    Log.d("unit", unit.getValue());
-                } else {
-                    unit.setValue("no unit");
-                }
-            }
-
-            @Override
-            public void onFailure(Call<InfoResponse> call, Throwable t) {
-                Log.e("Info API Error", "Error fetching info", t);
-            }
-        });
-
-        return unit;
-    }
+//    public LiveData<String> fetchUnit(String property, String depth){
+//        MutableLiveData<String> unit = new MutableLiveData<>();
+//        isricApi.getInfo(0, 0, property, depth, "mean").enqueue(new Callback<InfoResponse>() {
+//            @Override
+//            public void onResponse(Call<InfoResponse> call, Response<InfoResponse> response) {
+//                if (response.isSuccessful() && response.body() != null) {
+//                    InfoResponse body = response.body();
+//
+//                    unit.setValue(body.getProperties().getLayers().get(0).getUnitMeasure().getUnit());
+//                    Log.d("unit", unit.getValue());
+//                } else {
+//                    unit.setValue("no unit");
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Call<InfoResponse> call, Throwable t) {
+//                Log.e("Info API Error", "Error fetching info", t);
+//            }
+//        });
+//
+//        return unit;
+//    }
 }
 

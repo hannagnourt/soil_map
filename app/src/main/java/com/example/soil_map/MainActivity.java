@@ -76,8 +76,10 @@ public class MainActivity extends AppCompatActivity implements GoogleMap.OnMapCl
     LatLng tapPoint;
 
     String unit = "";
+    String index = "";
 
     LayerRepository layerRepository = new LayerRepository();
+    LayerViewModel layerViewModel;
 
     @Override
     protected void onCreate(Bundle bundle) {
@@ -89,6 +91,9 @@ public class MainActivity extends AppCompatActivity implements GoogleMap.OnMapCl
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        layerViewModel = new ViewModelProvider(this).get(LayerViewModel.class);
+        layerViewModel.setSelectedLayer(null);
 
         mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -153,11 +158,13 @@ public class MainActivity extends AppCompatActivity implements GoogleMap.OnMapCl
 
         legendButton = findViewById(R.id.legendButton);
         legendButton.setOnClickListener(v -> {
-            Intent intent = new Intent(getApplicationContext(), LegendActivity.class);
-            intent.putExtra("current layer", currentLayer);
-            intent.putExtra("unit", unit);
-            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-            startActivity(intent);
+//            Intent intent = new Intent(getApplicationContext(), LegendActivity.class);
+//            intent.putExtra("current layer", currentLayer);
+//            intent.putExtra("unit", unit);
+//            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+//            startActivity(intent);
+            LegendFragment legendFragment = LegendFragment.newInstance();
+            legendFragment.show(getSupportFragmentManager(), "legendFragment");
         });
 
         tapTextView = findViewById(R.id.tapText);
@@ -171,12 +178,12 @@ public class MainActivity extends AppCompatActivity implements GoogleMap.OnMapCl
         LayerSelectionFragment layerSelectionFragment = LayerSelectionFragment.newInstance();
         layerSelectionFragment.show(getSupportFragmentManager(), "layerSelectionFragment");
 
-        LayerViewModel layerViewModel = new ViewModelProvider(this).get(LayerViewModel.class);
         layerViewModel.getSelectedLayer().observe(mapFragment.getViewLifecycleOwner(), layerStructure -> {
             if (layerStructure != null)
             {
                 currentLayer = layerStructure.getProperty();
-
+                index = layerStructure.getIndex();
+                unit = layerStructure.getUnit();
             }
             else
                 currentLayer = "";
@@ -187,10 +194,16 @@ public class MainActivity extends AppCompatActivity implements GoogleMap.OnMapCl
         }
 
     public void openBasemapSelection(View view) {
-        Intent intent = new Intent(getApplicationContext(), BasemapSelection.class);
-        intent.putExtra("current layer", currentLayer);
-        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-        startActivity(intent);
+        BasemapSelectionFragment basemapSelectionFragment = new BasemapSelectionFragment();
+        basemapSelectionFragment.show(getSupportFragmentManager(), "basemapSelectionFragment");
+
+        layerViewModel.getBasemap().observe(mapFragment.getViewLifecycleOwner(), basemap -> {
+            if (basemap != null)
+            {
+                maptype = basemap;
+                mMap.setMapType(maptype);
+            }
+        });
     }
 
     @Override
@@ -232,18 +245,50 @@ public class MainActivity extends AppCompatActivity implements GoogleMap.OnMapCl
 
             if (currentLayer != null && !currentLayer.isEmpty())
             {
-                String[] temp = currentLayer.split("_");
-                if (temp.length > 0)
-                {
-                    layerRepository.fetchInfo(point.longitude, point.latitude, temp[0], temp[1]).observe(this, s -> {
-                        tapTextView.setText(text + "\n" + getFullName(temp[0]) + ": " + s);
-                        updateTapTextPosition(point);
-                    });
-                }
+//                String[] temp = currentLayer.split("_");
+//                if (temp.length > 0)
+//                {
+//                    layerRepository.fetchInfo(point.longitude, point.latitude, temp[0], temp[1]).observe(this, s -> {
+//                        tapTextView.setText(text + "\n" + getFullName(temp[0]) + ": " + s);
+//                        updateTapTextPosition(point);
+//                    });
+//                }
+                int zoom = (int) mMap.getCameraPosition().zoom;
+                LatLngBounds bounds = getLatLngBoundsForPoint(point, zoom);
+                String bbox = bounds.southwest.longitude + "," + bounds.southwest.latitude + "," +
+                        bounds.northeast.longitude + "," + bounds.northeast.latitude;
+                layerRepository.fetchInfo(currentLayer, bbox).observe(this, s -> {
+                    tapTextView.setText(text + "\n" + index + ": " + s + " " + unit);
+                    updateTapTextPosition(point);
+                });
             }
 
             tapTextView.setVisibility(View.VISIBLE);
         }
+
+    private LatLngBounds getLatLngBoundsForPoint(LatLng latLng, int zoom) {
+        // Google Maps tile size
+        int TILE_SIZE = 256;
+
+        // Earth's circumference in meters (approx.)
+        double EARTH_CIRCUMFERENCE = 40075017;
+
+        // Calculate meters per pixel at the given zoom level
+        double metersPerPixel = EARTH_CIRCUMFERENCE / (TILE_SIZE * Math.pow(2, zoom));
+
+        // Approximate size of a tile in degrees
+        double latDegreeSpan = (metersPerPixel / EARTH_CIRCUMFERENCE) * 360;
+        double lngDegreeSpan = latDegreeSpan / Math.cos(Math.toRadians(latLng.latitude));
+
+        // Calculate bounds
+        double south = latLng.latitude - latDegreeSpan / 2;
+        double north = latLng.latitude + latDegreeSpan / 2;
+        double west = latLng.longitude - lngDegreeSpan / 2;
+        double east = latLng.longitude + lngDegreeSpan / 2;
+
+        return new LatLngBounds(new LatLng(south, west), new LatLng(north, east));
+    }
+
 
     private void updateTapTextPosition(LatLng point){
         Projection projection = mMap.getProjection();
@@ -292,20 +337,7 @@ public class MainActivity extends AppCompatActivity implements GoogleMap.OnMapCl
             @Override
             public URL getTileUrl(int x, int y, int zoom) {
                 LatLngBounds bounds = getTileBounds(x, y, zoom);
-/*                    String tileUrl = "https://data.opendevelopmentmekong.net/geoserver/ODMekong/khu_bao_ton/wms?service=WMS&request=GetMap" +
-                            "&layers=ODMekong:khu_bao_ton" +
-                            "&bbox=" + bounds.southwest.longitude + "," + bounds.southwest.latitude + "," +
-                            bounds.northeast.longitude + "," + bounds.northeast.latitude +
-                            "&width=256&height=256" +
-                            "&srs=EPSG:4326&styles=&format=image/png";*/
 
-/*                double[][] bounds = tileBounds(x, y, zoom);
-                String tileUrl = "http://27.71.27.228:8080/geoserver/soil/wms?service=WMS&version=1.1.0&request=GetMap" +
-                        "&layers=soil:" + layer +
-                        "&bbox=" + bounds[0][1] + "," + bounds[0][0] + "," +
-                        bounds[1][1] + "," + bounds[1][0] +
-                        "&width=256&height=256" +
-                        "&srs=EPSG:4326&styles=&format=image/png";*/
                 String tileUrl = "https://geoserver.geoscience.vn:8443/geoserver/soil/wms?service=WMS&version=1.1.0&request=GetMap" +
                         "&layers=soil:" + layer +
                         "&bbox=" + bounds.southwest.longitude + "," + bounds.southwest.latitude + "," +
