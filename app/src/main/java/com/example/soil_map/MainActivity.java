@@ -258,7 +258,10 @@ public class MainActivity extends AppCompatActivity implements GoogleMap.OnMapCl
                 String bbox = bounds.southwest.longitude + "," + bounds.southwest.latitude + "," +
                         bounds.northeast.longitude + "," + bounds.northeast.latitude;
                 layerRepository.fetchInfo(currentLayer, bbox).observe(this, s -> {
-                    tapTextView.setText(text + "\n" + index + ": " + s + " " + unit);
+                    if (!s.equals("no info"))
+                        tapTextView.setText(text + "\n" + index + ": " + s + " " + unit);
+                    else
+                        tapTextView.setText(text + "\n" + s);
                     updateTapTextPosition(point);
                 });
             }

@@ -66,8 +66,11 @@ public class LayerRepository {
                 if (response.isSuccessful() && response.body() != null) {
                     InfoResponse body = response.body();
                     Log.d("response", body.toString());
+                    List<Feature> features = body.getFeatures();
 
-                    String v = body.getFeatures().get(0).getProperties().getValue();
+                    String v = null;
+                    if (features.size() > 0)
+                        v = body.getFeatures().get(0).getProperties().getValue();
                     if (v != null)
                         info.setValue(v);
                     else
