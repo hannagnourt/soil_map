@@ -218,8 +218,8 @@ public class MainActivity extends AppCompatActivity implements GoogleMap.OnMapCl
         // Add a marker and move the camera
         LatLng hanoi = new LatLng(21.033333, 105.849998);
         LatLng thaibinh = new LatLng(20.45, 106.34002);
-        mMap.addMarker(new MarkerOptions().position(hanoi).title("Marker in Hanoi"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(thaibinh, 10));
+//        mMap.addMarker(new MarkerOptions().position(hanoi).title("Marker in Thaibinh"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(thaibinh, 5));
 
         mMap.setOnMapClickListener(point -> {
             tapPoint = point;
